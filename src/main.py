@@ -1,9 +1,9 @@
 from textnode import TextNode, TextType
-from htmlnode import HTMLNode
+from htmlnode import HTMLNode, LeafNode
 def main():
-    #dummy_url = HTMLNode("p", "test_value", "test_children", {"test": "value", "test2": "value2"})
-    #print(dummy_url.props_to_html())
-    pass
+    node1 = LeafNode("p", "This is a paragraph of text.")
+    node2 = LeafNode("a", "Click me!", {"href": "https://www.google.com"})
+    print(node2.to_html())
 
 
 
