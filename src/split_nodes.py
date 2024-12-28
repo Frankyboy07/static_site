@@ -17,9 +17,3 @@ def split_notes_delimiter(old_nodes, delimiter, text_type):
             result.append(node)
     return(result)
         
-
-
-node = TextNode("This is `code` and this is *italic*.", TextType.TEXT)
-result = split_notes_delimiter([node], "`", TextType.CODE)
-result2= split_notes_delimiter(result, "*", TextType.ITALIC)
-print(result2)
