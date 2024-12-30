@@ -1,26 +1,37 @@
 import re
+
 from textnode import TextNode, TextType
-from htmlnode import HTMLNode, LeafNode, ParentNode
-from extract_markdown import extract_markdown_links, extract_markdown_images
+
+
+def text_to_textnodes(text):
+    nodes = [TextNode(text, TextType.TEXT)]
+    nodes = split_nodes_delimiter(nodes, "**", TextType.BOLD)
+    nodes = split_nodes_delimiter(nodes, "*", TextType.ITALIC)
+    nodes = split_nodes_delimiter(nodes, "`", TextType.CODE)
+    nodes = split_nodes_image(nodes)
+    nodes = split_nodes_link(nodes)
+    return nodes
 
 
 def split_nodes_delimiter(old_nodes, delimiter, text_type):
-    result = []
-    for node in old_nodes:
-        if node.text_type == TextType.TEXT:
-            delimiter_count = len(node.text.split(delimiter))-1
-            if delimiter_count % 2 != 0:
-                raise Exception(f"Unpaired delimiter {delimiter}")
-            split_text = node.text.split(delimiter)
-            for i in range(len(split_text)):
-                if i % 2 == 0:
-                    if split_text[i] != "":
-                        result.append(TextNode(split_text[i], TextType.TEXT))
-                else:
-                    result.append(TextNode(split_text[i], text_type))
-        else:
-            result.append(node)
-    return (result)
+    new_nodes = []
+    for old_node in old_nodes:
+        if old_node.text_type != TextType.TEXT:
+            new_nodes.append(old_node)
+            continue
+        split_nodes = []
+        sections = old_node.text.split(delimiter)
+        if len(sections) % 2 == 0:
+            raise ValueError("Invalid markdown, formatted section not closed")
+        for i in range(len(sections)):
+            if sections[i] == "":
+                continue
+            if i % 2 == 0:
+                split_nodes.append(TextNode(sections[i], TextType.TEXT))
+            else:
+                split_nodes.append(TextNode(sections[i], text_type))
+        new_nodes.extend(split_nodes)
+    return new_nodes
 
 
 def split_nodes_image(old_nodes):
@@ -87,11 +98,3 @@ def extract_markdown_links(text):
     pattern = r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)"
     matches = re.findall(pattern, text)
     return matches
-
-
-def text_to_textnode(text):
-    node = TextNode(text, TextType.TEXT)
-    result = split_nodes_image(split_nodes_link(split_nodes_delimiter(split_nodes_delimiter(split_nodes_delimiter([node], "**", TextType.BOLD), "*", TextType.ITALIC), "`", TextType.CODE)))
-    return result
-
-
